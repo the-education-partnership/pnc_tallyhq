@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import psycopg2.extensions
+import datetime
+from corsheaders.defaults import default_headers
+import django_heroku
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,8 +29,17 @@ SECRET_KEY = '@dt1e0z9-x%dcxaaozl8g$)!c55z4xw3_@z+ue6wn1-m=6h_b0'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
+AWS_LOCATION = 'static'
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('S3_BUCKET')
+
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
 
 # Application definition
 
@@ -75,8 +88,15 @@ WSGI_APPLICATION = 'tep.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ.get('TEP_DB_NAME', 'db8mlck9tkii85'),
+        'USER': os.environ.get('TEP_ADMIN', 'aodysrgenvcyvg'),
+        'PASSWORD': os.environ.get('TEP_PWD', '2e50eb5c38225735a7f2f498e93d5dcd55b51bf8bfe6c2a47861e8255c90fb30'),
+        'HOST': os.environ.get('TEP_HOST', 'ec2-174-129-10-235.compute-1.amazonaws.com'),
+        'PORT': '5432',
+    },
+    'OPTIONS': {
+        'isolation_level': psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE,
     }
 }
 
@@ -118,3 +138,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+django_heroku.settings(locals(),staticfiles=False)
